@@ -1,5 +1,5 @@
 import os
-from keras.optimizers import Adam
+from keras.optimizers import Adam, SGD
 from keras.callbacks import CSVLogger, ModelCheckpoint
 import multiprocessing
 
@@ -18,12 +18,12 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 ##############
 n_seconds = 3
 downsampling = 4
-batchsize = 32
+batchsize = 64
 model_n_filters = 32
 model_embedding_dimension = 128
-training_set = ['train-clean-100', 'train-clean-360']
+training_set = ['train-clean-100']
 validation_set = 'dev-clean'
-num_epochs = 25
+num_epochs = 10
 evaluate_every_n_batches = 500
 num_evaluation_tasks = 500
 n_shot_classification = 1
@@ -66,7 +66,8 @@ valid_generator = (whiten_downsample(batch) for batch in valid.yield_verificatio
 ################
 encoder = get_baseline_convolutional_encoder(model_n_filters, model_embedding_dimension)
 siamese = build_siamese_net(encoder, (input_length, 1))
-opt = Adam(clipnorm=1.)
+# opt = Adam(clipnorm=1.)
+opt = SGD(lr=0.01)
 siamese.compile(loss=contrastive_loss, optimizer=opt, metrics=['accuracy'])
 
 
@@ -94,7 +95,7 @@ siamese.fit_generator(
             monitor='val_{}-shot_acc'.format(n_shot_classification),
             mode='max',
             save_best_only=True,
-            verbose=True
+            verbose=False
         )
     ]
 

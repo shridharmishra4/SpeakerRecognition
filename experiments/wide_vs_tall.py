@@ -93,9 +93,9 @@ n_speakers = np.ceil(np.logspace(np.log(min_speakers), np.log(max_speakers), n_p
 for n in n_speakers:
     minutes_per_speaker = min_speakers*max_minutes*1./n
     seconds_per_speaker = minutes_per_speaker*60.
-    print '*' * 35
-    print '{} speakers, {:.2f} minutes per speaker'.format(n, min_speakers*max_minutes*1./n)
-    print '*' * 35
+    print('*' * 35)
+    print('{} speakers, {:.2f} minutes per speaker'.format(n, min_speakers*max_minutes*1./n))
+    print('*' * 35)
 
     reduced_train = create_reduced_dataset(train, n, seconds_per_speaker)
     train_generator = (batch_preprocessor(batch) for batch in train.yield_verification_batches(batchsize))
@@ -109,7 +109,7 @@ for n in n_speakers:
         # Train
         param_str = 'siamese__nspeakers_{}__secondsperspeaker_{}__filters_{}__embed_{}__drop_{}__r_{}'.format(
             n, int(seconds_per_speaker), model_n_filters, model_embedding_dimension, model_dropout, repeat)
-        print param_str
+        print(param_str)
         siamese.fit_generator(
             generator=train_generator,
             steps_per_epoch=evaluate_every_n_batches,

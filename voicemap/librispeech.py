@@ -37,7 +37,7 @@ class LibriSpeechDataset(Sequence):
         self.pad = pad
         self.label = label
 
-        print('Initialising LibriSpeechDataset with minimum length = {}s and subsets = {}'.format(seconds, subsets))
+        print(('Initialising LibriSpeechDataset with minimum length = {}s and subsets = {}'.format(seconds, subsets)))
 
         # Convert subset to list if it is a string
         # This allows to handle list of multiple subsets the same a single subset
@@ -67,7 +67,7 @@ class LibriSpeechDataset(Sequence):
             )
 
             audio_files = []
-            for subset, found in found_cache.iteritems():
+            for subset, found in found_cache.items():
                 if not found:
                     audio_files += self.index_subset(subset)
 
@@ -98,7 +98,7 @@ class LibriSpeechDataset(Sequence):
         self.datasetid_to_speaker_id = self.df.to_dict()['speaker_id']
         self.datasetid_to_sex = self.df.to_dict()['sex']
 
-        print('Finished indexing data. {} usable files found.'.format(len(self)))
+        print(('Finished indexing data. {} usable files found.'.format(len(self))))
 
     def __getitem__(self, index):
         instance, samplerate = sf.read(self.datasetid_to_filepath[index])
@@ -132,7 +132,7 @@ class LibriSpeechDataset(Sequence):
         elif self.label == 'speaker':
             label = self.datasetid_to_speaker_id[index]
         else:
-            raise(ValueError, 'Label type must be one of (\'sex\', \'speaker\')'.format(self.label))
+            raise ValueError
 
         return instance, label
 
@@ -144,13 +144,14 @@ class LibriSpeechDataset(Sequence):
 
     def get_alike_pairs(self, num_pairs):
         """Generates a list of 2-tuples containing pairs of dataset IDs belonging to the same speaker."""
+        num_pairs = int(num_pairs)
         alike_pairs = pd.merge(
-            self.df.sample(num_pairs*2, weights='length'),
+            self.df.sample(int(num_pairs*2), weights='length'),
             self.df,
             on='speaker_id'
         ).sample(num_pairs)[['speaker_id', 'id_x', 'id_y']]
 
-        alike_pairs = zip(alike_pairs['id_x'].values, alike_pairs['id_y'].values)
+        alike_pairs = list(zip(alike_pairs['id_x'].values, alike_pairs['id_y'].values))
 
         return alike_pairs
 
@@ -158,11 +159,12 @@ class LibriSpeechDataset(Sequence):
         """Generates a list of 2-tuples containing pairs of dataset IDs belonging to different speakers."""
         # First get a random sample from the dataset and then get a random sample from the remaining part of the dataset
         # that doesn't contain any speakers from the first random sample
+        num_pairs = int(num_pairs)
         random_sample = self.df.sample(num_pairs, weights='length')
         random_sample_from_other_speakers = self.df[~self.df['speaker_id'].isin(
             random_sample['speaker_id'])].sample(num_pairs, weights='length')
 
-        differing_pairs = zip(random_sample['id'].values, random_sample_from_other_speakers['id'].values)
+        differing_pairs = list(zip(random_sample['id'].values, random_sample_from_other_speakers['id'].values))
 
         return differing_pairs
 
@@ -179,19 +181,19 @@ class LibriSpeechDataset(Sequence):
         alike_pairs = self.get_alike_pairs(batchsize / 2)
 
         # Take only the instances not labels and stack to form a batch of pairs of instances from the same speaker
-        input_1_alike = np.stack([self[i][0] for i in zip(*alike_pairs)[0]])
-        input_2_alike = np.stack([self[i][0] for i in zip(*alike_pairs)[1]])
+        input_1_alike = np.stack([self[i][0] for i in list(zip(*alike_pairs))[0]])
+        input_2_alike = np.stack([self[i][0] for i in list(zip(*alike_pairs))[1]])
 
         differing_pairs = self.get_differing_pairs(batchsize / 2)
 
         # Take only the instances not labels and stack to form a batch of pairs of instances from different speakers
-        input_1_different = np.stack([self[i][0] for i in zip(*differing_pairs)[0]])
-        input_2_different = np.stack([self[i][0] for i in zip(*differing_pairs)[1]])
+        input_1_different = np.stack([self[i][0] for i in list(zip(*differing_pairs))[0]])
+        input_2_different = np.stack([self[i][0] for i in list(zip(*differing_pairs))[1]])
 
         input_1 = np.vstack([input_1_alike, input_1_different])[:, :, np.newaxis]
         input_2 = np.vstack([input_2_alike, input_2_different])[:, :, np.newaxis]
 
-        outputs = np.append(np.zeros(batchsize/2), np.ones(batchsize/2))[:, np.newaxis]
+        outputs = np.append(np.zeros(int(batchsize/2)), np.ones(int(batchsize/2)))[:, np.newaxis]
 
         return [input_1, input_2], outputs
 
@@ -211,10 +213,10 @@ class LibriSpeechDataset(Sequence):
         :return:
         """
         if k >= self.unique_speakers:
-            raise(ValueError, 'k must be smaller than the number of unique speakers in this dataset!')
+            raise ValueError
 
         if k <= 1:
-            raise(ValueError, 'k must be greater than or equal to one!')
+            raise ValueError
 
         query = self.df.sample(1, weights='length')
         query_sample = self[query.index.values[0]]
@@ -248,7 +250,7 @@ class LibriSpeechDataset(Sequence):
         LibriSpeech dataset
         """
         audio_files = []
-        print('Indexing {}...'.format(subset))
+        print(('Indexing {}...'.format(subset)))
         # Quick first pass to find total for tqdm bar
         subset_len = 0
         for root, folders, files in os.walk(PATH + '/data/LibriSpeech/{}/'.format(subset)):

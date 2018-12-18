@@ -22,12 +22,12 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 ##############
 n_seconds = 3
 downsampling = 4
-batchsize = 64
+batchsize = 16
 filters = 128
 embedding_dimension = 64
 dropout = 0.0
-training_set = ['train-clean-100', 'train-clean-360']
-validation_set = 'dev-clean'
+training_set = ['dev-clean']
+validation_set = 'test-clean'
 pad = True
 num_epochs = 50
 evaluate_every_n_batches = 500
@@ -59,7 +59,7 @@ class BatchedSequence(Sequence):
         self.batchsize = batchsize
 
         # Initialise index to batch mapping
-        self.underlying_indexes = range(len(sequence))
+        self.underlying_indexes = list(range(len(sequence)))
 
         np.random.shuffle(self.underlying_indexes)
         self.batch_to_index = {i: self.underlying_indexes[i*batchsize:(i+1)*batchsize] for i in range(len(self))}
@@ -113,8 +113,8 @@ classifier.add(Dense(train.num_classes(), activation='softmax'))
 
 opt = Adam(clipnorm=1.)
 classifier.compile(loss='categorical_crossentropy', optimizer=opt, metrics=['accuracy'])
-plot_model(classifier, show_shapes=True, to_file=PATH + '/plots/classifier.png')
-print classifier.summary()
+#plot_model(classifier, show_shapes=True, to_file=PATH + '/plots/classifier.png')
+print(classifier.summary())
 
 
 #################

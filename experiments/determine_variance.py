@@ -60,7 +60,7 @@ siamese = build_siamese_net(encoder, (input_length, 1))
 opt = Adam(clipnorm=1.)
 siamese.compile(loss='binary_crossentropy', optimizer=opt, metrics=['accuracy'])
 plot_model(siamese, show_shapes=True, to_file=PATH + '/plots/siamese.png')
-print siamese.summary()
+print(siamese.summary())
 
 
 #################

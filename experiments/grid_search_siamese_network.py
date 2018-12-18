@@ -58,7 +58,7 @@ for f, emb, drop in product(filters, embedding, dropout):
 
     # Train
     param_str = 'siamese__filters_{}__embed_{}__drop_{}'.format(f, emb, drop)
-    print param_str
+    print(param_str)
     siamese.fit_generator(
         generator=train_generator,
         steps_per_epoch=evaluate_every_n_batches,

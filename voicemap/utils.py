@@ -88,7 +88,7 @@ def contrastive_loss(y_true, y_pred):
 def whiten(batch, rms=0.038021):
     """This function whitens a batch so each sample has 0 mean and the same root mean square amplitude i.e. volume."""
     if len(batch.shape) != 3:
-        raise(ValueError, 'Input must be a 3D array of shape (n_segments, n_timesteps, 1).')
+        raise ValueError
 
     # Subtract mean
     sample_wise_mean = batch.mean(axis=1)
@@ -120,7 +120,7 @@ def n_shot_task_evaluation(model, dataset, preprocessor, num_tasks, n, k, networ
 
     if n == 1 and network_type == 'siamese':
         # Directly use siamese network to get pairwise verficiation score, minimum is closest
-        for i_eval in tqdm(range(num_tasks)):
+        for i_eval in tqdm(list(range(num_tasks))):
             query_sample, support_set_samples = dataset.build_n_shot_task(k, n)
 
             input_1 = np.stack([query_sample[0]] * k)[:, :, np.newaxis]
@@ -144,9 +144,9 @@ def n_shot_task_evaluation(model, dataset, preprocessor, num_tasks, n, k, networ
             encoder.set_weights(model.get_weights())
             encoder.pop()
         else:
-            raise(ValueError, 'mode must be one of (siamese, classifier)')
+            raise ValueError
 
-        for i_eval in tqdm((range(num_tasks))):
+        for i_eval in tqdm((list(range(num_tasks)))):
             query_sample, support_set_samples = dataset.build_n_shot_task(k, n)
 
             # Perform preprocessing
@@ -205,13 +205,13 @@ def n_shot_task_evaluation(model, dataset, preprocessor, num_tasks, n, k, networ
                 # As dot product is a kind of similarity let's make this a "distance" by flipping the sign
                 pred = -pred
             else:
-                raise(ValueError, 'Distance must be in (euclidean, cosine, dot_product)')
+                raise ValueError
 
             if np.argmin(pred) == 0:
                 # 0 is the correct result as by the function definition
                 n_correct += 1
     else:
-        raise(ValueError, "n must be >= 1")
+        raise ValueError
 
     return n_correct
 
@@ -249,4 +249,4 @@ class NShotEvaluationCallback(Callback):
         n_shot_acc = n_correct * 1. / self.num_tasks
         logs['val_{}-shot_acc'.format(self.n_shot)] = n_shot_acc
 
-        print 'val_{}-shot_acc: {:.4f}'.format(self.n_shot, n_shot_acc)
+        print('val_{}-shot_acc: {:.4f}'.format(self.n_shot, n_shot_acc))

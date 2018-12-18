@@ -39,9 +39,9 @@ k_way_classification = 5
 # Training Loop #
 #################
 for fragment_length in n_seconds:
-    print '*' * 23
-    print '***** {:.1f} seconds *****'.format(fragment_length)
-    print '*' * 23
+    print('*' * 23)
+    print('***** {:.1f} seconds *****'.format(fragment_length))
+    print('*' * 23)
     input_length = int(LIBRISPEECH_SAMPLING_RATE * fragment_length / downsampling)
 
     # Create datasets
@@ -63,7 +63,7 @@ for fragment_length in n_seconds:
         param_str = 'siamese__nseconds_{}__filters_{}__embed_{}__drop_{}__r_{}'.format(fragment_length, model_n_filters,
                                                                                        model_embedding_dimension,
                                                                                        model_dropout, repeat)
-        print param_str
+        print(param_str)
         siamese.fit_generator(
             generator=train_generator,
             steps_per_epoch=evaluate_every_n_batches,
